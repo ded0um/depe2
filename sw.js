@@ -1,9 +1,9 @@
-const CACHE_NAME = 'depe-dedoum-v1';
+const CACHE_NAME = 'depe2-dedoum-v1';
 const ASSETS = [
-  '/depe/',
-  '/depe/index.html',
-  '/depe/manifest.json',
-  '/depe/icon.svg'
+  '/depe2/',
+  '/depe2/index.html',
+  '/depe2/manifest.json',
+  '/depe2/icon.svg'
 ];
 
 self.addEventListener('install', (e) => {
