@@ -3,7 +3,7 @@
   "name": "Dépenses",
   "short_name": "Dépenses",
   "description": "Gestion des dépenses",
-  "start_url": "https://ded0um.github.io/depe2/?app=depe",
+  "start_url": "https://ded0um.github.io/depe2/?app=depe2",
   "scope": "https://ded0um.github.io/depe2/",
   "display": "standalone",
   "background_color": "#0f172a",
