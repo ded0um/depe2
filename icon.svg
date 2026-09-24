@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Dégradé pour la bordure fine en rouge/élément (#ef4444) -->
+    <linearGradient id="expense-border" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+
+    <!-- Fond circulaire sombre (#0f172a) -->
+    <linearGradient id="expense-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- Ombre interne pour l'effet de profondeur -->
+    <filter id="inner-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feOffset dx="0" dy="4"/>
+      <feGaussianBlur stdDeviation="5" result="offset-blur"/>
+      <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/>
+      <feFlood flood-color="#000" flood-opacity="0.4" result="color"/>
+      <feComposite operator="in" in="color" in2="inverse" result="shadow"/>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <!-- Anneau extérieur (Bordure fine rouge/élément) -->
+  <circle cx="256" cy="256" r="248" fill="url(#expense-border)"/>
+
+  <!-- Fond intérieur sombre (#0f172a) -->
+  <circle cx="256" cy="256" r="238" fill="url(#expense-bg)" filter="url(#inner-shadow)"/>
+
+  <!-- Texte du haut : OBDN (aux couleurs du texte #94a3b8) -->
+  <text x="256" y="115" 
+        text-anchor="middle" 
+        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+        font-weight="800" 
+        font-size="64" 
+        letter-spacing="4" 
+        fill="#94a3b8">SUIVI</text>
+          <text x="256" y="195" 
+        text-anchor="middle" 
+        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+        font-weight="800" 
+        font-size="64" 
+        letter-spacing="4" 
+        fill="#94a3b8">DÉPENSES</text>
+
+  <!-- Illustration centrale : Gestion des dépenses (Portefeuille / Carte / Graphique de budget) -->
+  <g transform="translate(136, 180)">
+
+    
+
+    <!-- Icône de graphique / flèche descendante de dépense -->
+    <path d="M 50 120 L 90 95 L 130 110 L 180 80" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="180" cy="80" r="6" fill="#ef4444"/>
+  </g>
+
+  <!-- Texte DEDOUM en bas (même emplacement, même taille, couleur #94a3b8) -->
+  <text x="256" y="442" 
+        text-anchor="middle" 
+        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+        font-weight="900" 
+        font-size="54" 
+        letter-spacing="4" 
+        fill="#94a3b8">DEDOUM</text>
+</svg>
