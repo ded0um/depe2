@@ -383,7 +383,7 @@
     // Enregistrement du Service Worker PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/depe/sw.js', { scope: '/depe/' })
+        navigator.serviceWorker.register('/depe2/sw.js', { scope: '/depe2/' })
           .catch(err => console.error('Erreur SW:', err));
       });
     }
