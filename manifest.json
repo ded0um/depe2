@@ -1,0 +1,19 @@
+{
+  "id": "https://ded0um.github.io/depe/",
+  "name": "Dépenses",
+  "short_name": "Dépenses",
+  "description": "Gestion des dépenses",
+  "start_url": "https://ded0um.github.io/depe/?app=depe",
+  "scope": "https://ded0um.github.io/depe/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
