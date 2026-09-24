@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dépenses</title>
+
+<!-- Configuration PWA et Icône -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dépenses">
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #ef4444;
+      --primary-hover: #dc2626;
+      --checked: #6c757d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 65px 16px 90px 16px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Carte de résumé figée en haut */
+    .summary-card {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 500px;
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      z-index: 90;
+    }
+    .summary-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+    .summary-card .amount {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* Titres de sections */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      margin: 14px 0 10px 4px;
+    }
+
+    /* Liste des dépenses */
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+    li:active { background: #283548; }
+    
+    /* Style pour les opérations passées */
+    li.done {
+      opacity: 0.75;
+      background: #182232;
+      border-color: #2a374a;
+    }
+    li.done .desc {
+      text-decoration: line-through;
+      color: #cbd5e1;
+    }
+    li.done .amount-tag { color: #94a3b8; }
+
+    .item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+    .info .desc { font-weight: 600; font-size: 15px; color: var(--text); display: block; }
+    .info .date-tag { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-top: 2px; }
+    
+    .right-side { display: flex; align-items: center; gap: 10px; }
+    .amount-tag { font-weight: 700; font-size: 16px; color: var(--primary); }
+    
+    /* Bouton de suppression */
+    .btn-del {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .btn-del svg { width: 18px; height: 18px; fill: currentColor; }
+    .btn-del:active { color: var(--primary); background: #334155; }
+
+    /* Bouton Flottant (FAB) */
+    .fab-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-size: 32px;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+      cursor: pointer;
+      z-index: 100;
+    }
+    .fab-btn:active { transform: scale(0.95); background: var(--primary-hover); }
+
+    /* Surfenêtre pour ajout & édition */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-content {
+      background: var(--card);
+      border-top: 1px solid var(--card-border);
+      border-radius: 20px 20px 0 0;
+      padding: 20px 20px 30px 20px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h2 { font-size: 17px; margin: 0; font-weight: 700; color: var(--text); }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; padding: 4px; }
+
+    .form-grid { display: flex; flex-direction: column; gap: 12px; }
+    
+    input {
+      padding: 14px 16px;
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      font-size: 16px;
+      color: #f8fafc;
+      width: 100%;
+    }
+    input:focus { outline: none; border-color: var(--primary); }
+
+    /* Sélecteur à 2 boutons (Segmented Control) */
+    .segmented-control {
+      display: flex;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .segmented-btn {
+      flex: 1;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .segmented-btn.active {
+      background: var(--card-border);
+      color: var(--text);
+    }
+
+    button.btn-add {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 6px;
+    }
+    button.btn-add:active { background: var(--primary-hover); }
+
+    /* Surfenêtre de confirmation de suppression */
+    .confirm-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 300;
+    }
+    .confirm-overlay.open { display: flex; }
+
+    .confirm-box {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .confirm-box p { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 20px 0; }
+    .confirm-actions { display: flex; gap: 10px; }
+
+    .confirm-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .confirm-btn-cancel { background: #334155; color: var(--text); }
+    .confirm-btn-cancel:active { background: #475569; }
+    .confirm-btn-danger { background: var(--primary); color: white; }
+    .confirm-btn-danger:active { background: var(--primary-hover); }
+
+    iframe { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Résumé direct figé en haut -->
+  <div class="summary-card">
+    <div class="label">Reste à passer</div>
+    <div class="amount" id="totalAVenir">0.00 €</div>
+  </div>
+
+  <div class="section-title">Opérations à venir</div>
+  <ul id="listPending"></ul>
+
+  <div class="section-title" style="margin-top: 24px;">Opérations passées</div>
+  <ul id="listDone"></ul>
+
+  <!-- Bouton Flottant (FAB) -->
+  <button class="fab-btn" onclick="openModalForAdd()">+</button>
+
+  <!-- Surfenêtre pour ajout & édition -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nouvelle dépense</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="form-grid">
+        <input type="text" id="description" placeholder="Libellé (ex: Loyer, Forfait...)">
+        <input type="number" step="0.01" id="montant" placeholder="Montant (€)" inputmode="decimal">
+        
+        <div class="segmented-control">
+          <button type="button" class="segmented-btn active" id="btnPonctuel" onclick="setFrequence('ponctuelle')">Ponctuel</button>
+          <button type="button" class="segmented-btn" id="btnMensuel" onclick="setFrequence('mensuelle')">Mensuel</button>
+        </div>
+        
+        <div id="dateContainer">
+          <input type="text" id="dateExacteText" placeholder="Date (ex: 25/09/2026)" inputmode="numeric" maxlength="10" oninput="formatDateInput(this)">
+        </div>
+        <div id="jourContainer" style="display: none;">
+          <input type="number" id="jourMois" min="1" max="31" placeholder="Jour du mois (ex: 1, 5, 15...)" inputmode="numeric">
+        </div>
+
+        <button class="btn-add" id="btnSubmitModal" onclick="submitModal()">Ajouter la dépense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surfenêtre de confirmation de suppression -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <p>Supprimer cette dépense ?</p>
+      <div class="confirm-actions">
+        <button class="confirm-btn confirm-btn-cancel" onclick="closeConfirmModal()">Annuler</button>
+        <button class="confirm-btn confirm-btn-danger" id="confirmDeleteBtn">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire invisible pour envoi en arrière-plan -->
+  <form id="hiddenForm" action="https://script.google.com/macros/s/AKfycbyeOa3QR0VqsklBQ_XwAh3vK6-1ePcUVQKrp7MfDOi18nSRIABoHUKz0NtIvp8RDrVG/exec" method="POST" target="hiddenIframe">
+    <input type="hidden" name="action" id="formAction">
+    <input type="hidden" name="id" id="formId">
+    <input type="hidden" name="description" id="formDesc">
+    <input type="hidden" name="montant" id="formMontant">
+    <input type="hidden" name="categorie" id="formCat" value="Autre">
+    <input type="hidden" name="frequence" id="formFreq" value="ponctuelle">
+    <input type="hidden" name="dateVal" id="formDateVal">
+  </form>
+
+  <iframe name="hiddenIframe" id="hiddenIframe"></iframe>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyeOa3QR0VqsklBQ_XwAh3vK6-1ePcUVQKrp7MfDOi18nSRIABoHUKz0NtIvp8RDrVG/exec";
+    let localItems = [];
+    let itemToDeleteId = null;
+    let editingItemId = null;
+    let selectedFrequence = 'ponctuelle';
+
+    // Enregistrement du Service Worker PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/depe/sw.js', { scope: '/depe/' })
+          .catch(err => console.error('Erreur SW:', err));
+      });
+    }
+
+    function openModalForAdd() {
+      editingItemId = null;
+      document.getElementById('modalTitle').innerText = "Nouvelle dépense";
+      document.getElementById('btnSubmitModal').innerText = "Ajouter la dépense";
+      
+      document.getElementById('description').value = '';
+      document.getElementById('montant').value = '';
+      document.getElementById('dateExacteText').value = '';
+      document.getElementById('jourMois').value = '';
+      setFrequence('ponctuelle');
+
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function openModalForEdit(item) {
+      editingItemId = item.id;
+      document.getElementById('modalTitle').innerText = "Modifier la dépense";
+      document.getElementById('btnSubmitModal').innerText = "Enregistrer les modifications";
+
+      document.getElementById('description').value = item.description || '';
+      document.getElementById('montant').value = item.montant || '';
+
+      if (item.frequence === 'mensuelle') {
+        setFrequence('mensuelle');
+        document.getElementById('jourMois').value = item.dateVal || '';
+      } else {
+        setFrequence('ponctuelle');
+        document.getElementById('dateExacteText').value = item.dateVal || '';
+      }
+
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    function closeModalOutside(event) {
+      if (event.target.id === 'modalOverlay') closeModal();
+    }
+
+    function setFrequence(freq) {
+      selectedFrequence = freq;
+      const btnP = document.getElementById('btnPonctuel');
+      const btnM = document.getElementById('btnMensuel');
+
+      if (freq === 'mensuelle') {
+        btnM.classList.add('active');
+        btnP.classList.remove('active');
+        document.getElementById('dateContainer').style.display = 'none';
+        document.getElementById('jourContainer').style.display = 'block';
+      } else {
+        btnP.classList.add('active');
+        btnM.classList.remove('active');
+        document.getElementById('dateContainer').style.display = 'block';
+        document.getElementById('jourContainer').style.display = 'none';
+      }
+    }
+
+    function formatDateInput(input) {
+      let v = input.value.replace(/\D/g, '');
+      if (v.length > 2 && v.length <= 4) {
+        input.value = v.slice(0, 2) + '/' + v.slice(2);
+      } else if (v.length > 4) {
+        input.value = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4, 8);
+      } else {
+        input.value = v;
+      }
+    }
+
+    function getNextDueDateTimestamp(item) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      if (item.frequence === 'mensuelle') {
+        const targetDay = parseInt(item.dateVal, 10);
+        if (isNaN(targetDay)) return Infinity;
+
+        let targetDate = new Date(today.getFullYear(), today.getMonth(), targetDay);
+        if (targetDate < today) {
+          targetDate = new Date(today.getFullYear(), today.getMonth() + 1, targetDay);
+        }
+        return targetDate.getTime();
+      } else if (item.dateVal) {
+        let parts = [];
+        if (item.dateVal.includes('/')) {
+          parts = item.dateVal.split('/');
+          if (parts.length === 3) {
+            const targetDate = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+            return targetDate.getTime();
+          }
+        } else if (item.dateVal.includes('-')) {
+          parts = item.dateVal.split('-');
+          if (parts.length === 3) {
+            const targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            return targetDate.getTime();
+          }
+        }
+      }
+      return Infinity;
+    }
+
+    function formatDateDisplay(item) {
+      if (item.frequence === 'mensuelle') {
+        return `Tous les ${item.dateVal} du mois`;
+      } else if (item.dateVal) {
+        if (item.dateVal.includes('-')) {
+          const parts = item.dateVal.split('-');
+          if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+          }
+        }
+        return item.dateVal;
+      }
+      return '';
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch(API_URL + "?cache=" + Date.now());
+        const data = await response.json();
+        localItems = data.items || [];
+        updateUI();
+      } catch (err) {
+        console.error("Erreur :", err);
+      }
+    }
+
+    function updateUI() {
+      let totalAVenir = 0;
+
+      localItems.forEach(i => {
+        if (!i.fait) totalAVenir += i.montant;
+      });
+
+      document.getElementById('totalAVenir').innerText = totalAVenir.toFixed(2) + " €";
+
+      localItems.sort((a, b) => getNextDueDateTimestamp(a) - getNextDueDateTimestamp(b));
+
+      const pendingEl = document.getElementById('listPending');
+      const doneEl = document.getElementById('listDone');
+      
+      pendingEl.innerHTML = '';
+      doneEl.innerHTML = '';
+
+      const pendingItems = localItems.filter(i => !i.fait);
+      const doneItems = localItems.filter(i => i.fait);
+
+      if (pendingItems.length === 0) {
+        pendingEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:14px; padding: 10px 0;">Aucune opération à venir.</p>';
+      } else {
+        pendingItems.forEach(item => pendingEl.appendChild(createItemElement(item)));
+      }
+
+      if (doneItems.length === 0) {
+        doneEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:14px; padding: 10px 0;">Aucune opération passée.</p>';
+      } else {
+        doneItems.forEach(item => doneEl.appendChild(createItemElement(item)));
+      }
+    }
+
+    function createItemElement(item) {
+      const li = document.createElement('li');
+      if (item.fait) li.classList.add('done');
+
+      let pressTimer = null;
+      let isLongPress = false;
+
+      // Détection de l'appui long (2s)
+      const startPress = () => {
+        isLongPress = false;
+        pressTimer = setTimeout(() => {
+          isLongPress = true;
+          if (navigator.vibrate) navigator.vibrate(50);
+          openModalForEdit(item);
+        }, 2000);
+      };
+
+      const cancelPress = () => {
+        if (pressTimer) clearTimeout(pressTimer);
+      };
+
+      li.addEventListener('pointerdown', startPress);
+      li.addEventListener('pointerup', cancelPress);
+      li.addEventListener('pointerleave', cancelPress);
+
+      li.onclick = (e) => {
+        if (isLongPress) {
+          e.stopImmediatePropagation();
+          return;
+        }
+        toggleItem(item.id);
+      };
+
+      const dateTxt = formatDateDisplay(item);
+
+      li.innerHTML = `
+        <div class="item-left">
+          <div class="info">
+            <span class="desc">${item.description}</span>
+            ${dateTxt ? `<span class="date-tag">${dateTxt}</span>` : ''}
+          </div>
+        </div>
+        <div class="right-side">
+          <span class="amount-tag">-${item.montant.toFixed(2)} €</span>
+          <button class="btn-del" onclick="deleteItem('${item.id}', event)" title="Supprimer">
+            <svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+          </button>
+        </div>
+      `;
+      return li;
+    }
+
+    function submitForm(action, data = {}) {
+      document.getElementById('formAction').value = action;
+      document.getElementById('formId').value = data.id || '';
+      document.getElementById('formDesc').value = data.description || '';
+      document.getElementById('formMontant').value = data.montant || '';
+      document.getElementById('formFreq').value = data.frequence || '';
+      document.getElementById('formDateVal').value = data.dateVal || '';
+
+      document.getElementById('hiddenForm').submit();
+    }
+
+    function submitModal() {
+      const descInput = document.getElementById('description');
+      const amountInput = document.getElementById('montant');
+
+      const desc = descInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+      
+      let dateVal = '';
+      if (selectedFrequence === 'mensuelle') {
+        dateVal = document.getElementById('jourMois').value;
+      } else {
+        dateVal = document.getElementById('dateExacteText').value.trim();
+      }
+
+      if (!desc || isNaN(amount)) {
+        alert("Merci d'indiquer un libellé et un montant valide.");
+        return;
+      }
+
+      if (editingItemId) {
+        const item = localItems.find(i => i.id.toString() === editingItemId.toString());
+        if (item) {
+          item.description = desc;
+          item.montant = amount;
+          item.frequence = selectedFrequence;
+          item.dateVal = dateVal;
+
+          updateUI();
+          submitForm('edit', item);
+        }
+      } else {
+        const newId = Date.now().toString();
+        const newItem = {
+          id: newId,
+          description: desc,
+          montant: amount,
+          categorie: 'Autre',
+          fait: false,
+          frequence: selectedFrequence,
+          dateVal: dateVal
+        };
+
+        localItems.push(newItem);
+        updateUI();
+        submitForm('add', newItem);
+      }
+
+      closeModal();
+    }
+
+    function toggleItem(id) {
+      const item = localItems.find(i => i.id.toString() === id.toString());
+      if (item) {
+        item.fait = !item.fait;
+        updateUI();
+        submitForm('toggle', { id: id });
+      }
+    }
+
+    function deleteItem(id, event) {
+      if (event) event.stopPropagation();
+      itemToDeleteId = id;
+      document.getElementById('confirmOverlay').classList.add('open');
+    }
+
+    function closeConfirmModal() {
+      itemToDeleteId = null;
+      document.getElementById('confirmOverlay').classList.remove('open');
+    }
+
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+      if (itemToDeleteId) {
+        localItems = localItems.filter(i => i.id.toString() !== itemToDeleteId.toString());
+        updateUI();
+        submitForm('delete', { id: itemToDeleteId });
+        closeConfirmModal();
+      }
+    };
+
+    loadData();
+  </script>
+</body>
+</html>
