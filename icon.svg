@@ -23,44 +23,44 @@
     </filter>
   </defs>
 
-  <!-- Anneau extérieur (Bordure fine rouge/élément) -->
-  <circle cx="256" cy="256" r="248" fill="url(#expense-border)"/>
+  <!-- Groupe agrandi au maximum -->
+  <g transform="translate(256, 256) scale(1.032) translate(-256, -256)">
+    <!-- Anneau extérieur (Bordure fine rouge/élément) -->
+    <circle cx="256" cy="256" r="248" fill="url(#expense-border)"/>
 
-  <!-- Fond intérieur sombre (#0f172a) -->
-  <circle cx="256" cy="256" r="238" fill="url(#expense-bg)" filter="url(#inner-shadow)"/>
+    <!-- Fond intérieur sombre (#0f172a) -->
+    <circle cx="256" cy="256" r="238" fill="url(#expense-bg)" filter="url(#inner-shadow)"/>
 
-  <!-- Texte du haut : OBDN (aux couleurs du texte #94a3b8) -->
-  <text x="256" y="115" 
-        text-anchor="middle" 
-        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
-        font-weight="800" 
-        font-size="64" 
-        letter-spacing="4" 
-        fill="#94a3b8">SUIVI</text>
-          <text x="256" y="195" 
-        text-anchor="middle" 
-        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
-        font-weight="800" 
-        font-size="64" 
-        letter-spacing="4" 
-        fill="#94a3b8">DÉPENSES</text>
+    <!-- Texte du haut : OBDN (aux couleurs du texte #94a3b8) -->
+    <text x="256" y="115" 
+          text-anchor="middle" 
+          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+          font-weight="800" 
+          font-size="64" 
+          letter-spacing="4" 
+          fill="#94a3b8">SUIVI</text>
+    <text x="256" y="195" 
+          text-anchor="middle" 
+          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+          font-weight="800" 
+          font-size="64" 
+          letter-spacing="4" 
+          fill="#94a3b8">DÉPENSES</text>
 
-  <!-- Illustration centrale : Gestion des dépenses (Portefeuille / Carte / Graphique de budget) -->
-  <g transform="translate(136, 180)">
+    <!-- Illustration centrale : Gestion des dépenses -->
+    <g transform="translate(136, 180)">
+      <!-- Icône de graphique / flèche descendante de dépense -->
+      <path d="M 50 120 L 90 95 L 130 110 L 180 80" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="180" cy="80" r="6" fill="#ef4444"/>
+    </g>
 
-    
-
-    <!-- Icône de graphique / flèche descendante de dépense -->
-    <path d="M 50 120 L 90 95 L 130 110 L 180 80" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="180" cy="80" r="6" fill="#ef4444"/>
+    <!-- Texte DEDOUM en bas -->
+    <text x="256" y="442" 
+          text-anchor="middle" 
+          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+          font-weight="900" 
+          font-size="54" 
+          letter-spacing="4" 
+          fill="#94a3b8">DEDOUM</text>
   </g>
-
-  <!-- Texte DEDOUM en bas (même emplacement, même taille, couleur #94a3b8) -->
-  <text x="256" y="442" 
-        text-anchor="middle" 
-        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
-        font-weight="900" 
-        font-size="54" 
-        letter-spacing="4" 
-        fill="#94a3b8">DEDOUM</text>
 </svg>
