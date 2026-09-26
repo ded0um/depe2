@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <!-- Dégradé pour la bordure fine en rouge/élément (#ef4444) -->
+    <!-- Dégradé pour la bordure fine en rouge/dépense (#ef4444) -->
     <linearGradient id="expense-border" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ef4444"/>
       <stop offset="100%" stop-color="#b91c1c"/>
@@ -23,44 +23,49 @@
     </filter>
   </defs>
 
-  <!-- Groupe agrandi au maximum -->
-  <g transform="translate(256, 256) scale(1.032) translate(-256, -256)">
-    <!-- Anneau extérieur (Bordure fine rouge/élément) -->
+  <!-- Fond plein derrière le cercle : même couleur que le fond intérieur.
+       Il couvre tout le carré pour qu'aucun lanceur ne puisse jamais afficher
+       de blanc, quel que soit le masque appliqué (cercle, carré arrondi, etc.). -->
+  <rect width="512" height="512" fill="#0f172a"/>
+
+  <!-- Groupe réduit à 78% et centré : zone sûre "maskable" de Chrome
+       (le masque du lanceur peut rogner jusqu'à 10% de chaque côté) -->
+  <g transform="translate(256, 256) scale(0.78) translate(-256, -256)">
+    <!-- Anneau extérieur (bordure fine rouge/dépense) -->
     <circle cx="256" cy="256" r="248" fill="url(#expense-border)"/>
 
     <!-- Fond intérieur sombre (#0f172a) -->
     <circle cx="256" cy="256" r="238" fill="url(#expense-bg)" filter="url(#inner-shadow)"/>
 
-    <!-- Texte du haut : OBDN (aux couleurs du texte #94a3b8) -->
-    <text x="256" y="115" 
-          text-anchor="middle" 
-          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
-          font-weight="800" 
-          font-size="64" 
-          letter-spacing="4" 
+    <!-- Texte du haut : SUIVI / DÉPENSES (couleur texte #94a3b8) -->
+    <text x="256" y="115"
+          text-anchor="middle"
+          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+          font-weight="800"
+          font-size="64"
+          letter-spacing="4"
           fill="#94a3b8">SUIVI</text>
-    <text x="256" y="195" 
-          text-anchor="middle" 
-          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
-          font-weight="800" 
-          font-size="64" 
-          letter-spacing="4" 
+    <text x="256" y="195"
+          text-anchor="middle"
+          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+          font-weight="800"
+          font-size="64"
+          letter-spacing="4"
           fill="#94a3b8">DÉPENSES</text>
 
-    <!-- Illustration centrale : Gestion des dépenses -->
+    <!-- Illustration centrale : courbe de dépense -->
     <g transform="translate(136, 180)">
-      <!-- Icône de graphique / flèche descendante de dépense -->
       <path d="M 50 120 L 90 95 L 130 110 L 180 80" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
       <circle cx="180" cy="80" r="6" fill="#ef4444"/>
     </g>
 
     <!-- Texte DEDOUM en bas -->
-    <text x="256" y="442" 
-          text-anchor="middle" 
-          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
-          font-weight="900" 
-          font-size="54" 
-          letter-spacing="4" 
+    <text x="256" y="442"
+          text-anchor="middle"
+          font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+          font-weight="900"
+          font-size="54"
+          letter-spacing="4"
           fill="#94a3b8">DEDOUM</text>
   </g>
 </svg>
