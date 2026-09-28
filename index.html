@@ -5,25 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dépenses</title>
 
-<!-- Configuration PWA et Icône -->
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="apple-touch-icon" href="icon.svg">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Dépenses">
+  <!-- Configuration PWA et Icône -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Dépenses">
 
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --card-border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #ef4444;
-      --primary-hover: #dc2626;
-      --checked: #6c757d;
+      /* Palette Thème Bleu Roi & Ambre (WCAG AAA) */
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --card-border: #64748b; /* Bordures bien visibles */
+      --text: #0f172a;       /* Bleu-noir très sombre */
+      --text-muted: #334155; /* Gris foncé lisible */
+      --primary: #1e3a8a;    /* Bleu roi profond */
+      --primary-hover: #1e40af;
+      --accent: #b45309;     /* Ambre / Doré intense pour les montants */
+      --checked: #64748b;
     }
 
     * { box-sizing: border-box; }
@@ -32,9 +34,10 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       max-width: 500px;
       margin: 0 auto;
-      padding: 65px 16px 90px 16px;
+      padding: 85px 16px 100px 16px;
       background: var(--bg);
       color: var(--text);
+      font-size: 18px;
     }
 
     /* Carte de résumé figée en haut */
@@ -45,127 +48,125 @@
       transform: translateX(-50%);
       width: 100%;
       max-width: 500px;
-      background: rgba(30, 41, 59, 0.95);
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--card-border);
-      padding: 10px 20px;
+      border-bottom: 2px solid var(--card-border);
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
       z-index: 90;
     }
     .summary-card .label {
-      font-size: 11px;
+      font-size: 13px;
       text-transform: uppercase;
       color: var(--text-muted);
       letter-spacing: 0.8px;
-      font-weight: 600;
+      font-weight: 700;
     }
     .summary-card .amount {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 800;
-      color: var(--primary);
+      color: var(--accent);
     }
 
     /* Titres de sections */
     .section-title {
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 800;
       text-transform: uppercase;
       color: var(--text-muted);
       letter-spacing: 0.8px;
-      margin: 14px 0 10px 4px;
+      margin: 18px 0 10px 4px;
     }
 
     /* Liste des dépenses */
     ul { list-style: none; padding: 0; margin: 0; }
     li {
       background: var(--card);
-      border: 1px solid var(--card-border);
-      padding: 14px 16px;
-      margin-bottom: 10px;
+      border: 2px solid var(--card-border);
+      padding: 16px 18px;
+      margin-bottom: 12px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
-      transition: background 0.15s ease, opacity 0.15s ease;
+      transition: background 0.15s ease;
     }
-    li:active { background: #283548; }
-    
+    li:active { background: #e2e8f0; }
+
     /* Style pour les opérations passées */
     li.done {
-      opacity: 0.75;
-      background: #182232;
-      border-color: #2a374a;
+      background: #e2e8f0;
+      border-color: #cbd5e1;
     }
     li.done .desc {
       text-decoration: line-through;
-      color: #cbd5e1;
+      color: #475569;
     }
-    li.done .amount-tag { color: #94a3b8; }
+    li.done .amount-tag { color: #64748b; }
 
     .item-left {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
       flex: 1;
     }
-    .info .desc { font-weight: 600; font-size: 15px; color: var(--text); display: block; }
-    .info .date-tag { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-top: 2px; }
-    
-    .right-side { display: flex; align-items: center; gap: 10px; }
-    .amount-tag { font-weight: 700; font-size: 16px; color: var(--primary); }
-    
-    /* Bouton de suppression */
+    .info .desc { font-weight: 700; font-size: 18px; color: var(--text); display: block; }
+    .info .date-tag { font-size: 14px; font-weight: 600; color: var(--text-muted); display: block; margin-top: 2px; }
+
+    .right-side { display: flex; align-items: center; gap: 12px; }
+    .amount-tag { font-weight: 800; font-size: 18px; color: var(--accent); }
+
+    /* Bouton de suppression : Zone tactile élargie */
     .btn-del {
-      background: none;
-      border: none;
-      color: #64748b;
+      background: #f1f5f9;
+      border: 1px solid var(--card-border);
+      color: #1e3a8a;
       cursor: pointer;
-      padding: 6px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.15s ease, background 0.15s ease;
     }
-    .btn-del svg { width: 18px; height: 18px; fill: currentColor; }
-    .btn-del:active { color: var(--primary); background: #334155; }
+    .btn-del svg { width: 22px; height: 22px; fill: currentColor; }
+    .btn-del:active { color: #ffffff; background: var(--primary); }
 
-    /* Bouton Flottant (FAB) */
+    /* Bouton Flottant (FAB) agrandi */
     .fab-btn {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      width: 56px;
-      height: 56px;
-      border-radius: 28px;
+      width: 64px;
+      height: 64px;
+      border-radius: 32px;
       background: var(--primary);
       color: white;
       border: none;
-      font-size: 32px;
-      font-weight: 300;
+      font-size: 36px;
+      font-weight: 400;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
       cursor: pointer;
       z-index: 100;
     }
     .fab-btn:active { transform: scale(0.95); background: var(--primary-hover); }
 
-    /* Surfenêtre pour ajout & édition */
+    /* Surfenêtre (Modal) */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(4px);
       display: none;
       align-items: flex-end;
@@ -176,14 +177,14 @@
 
     .modal-content {
       background: var(--card);
-      border-top: 1px solid var(--card-border);
+      border-top: 2px solid var(--card-border);
       border-radius: 20px 20px 0 0;
-      padding: 20px 20px 30px 20px;
+      padding: 24px 20px 36px 20px;
       width: 100%;
       max-width: 500px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
       animation: slideUp 0.2s ease-out;
     }
 
@@ -196,60 +197,61 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
-    .modal-header h2 { font-size: 17px; margin: 0; font-weight: 700; color: var(--text); }
-    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; padding: 4px; }
+    .modal-header h2 { font-size: 20px; margin: 0; font-weight: 800; color: var(--text); }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; padding: 6px; }
 
-    .form-grid { display: flex; flex-direction: column; gap: 12px; }
-    
+    .form-grid { display: flex; flex-direction: column; gap: 16px; }
+
     input {
-      padding: 14px 16px;
-      background-color: #0f172a;
-      border: 1px solid var(--card-border);
+      padding: 16px;
+      background-color: #ffffff;
+      border: 2px solid var(--card-border);
       border-radius: 12px;
-      font-size: 16px;
-      color: #f8fafc;
+      font-size: 18px;
+      color: var(--text);
       width: 100%;
     }
     input:focus { outline: none; border-color: var(--primary); }
 
-    /* Sélecteur à 2 boutons (Segmented Control) */
+    /* Sélecteur à 2 boutons */
     .segmented-control {
       display: flex;
-      background: #0f172a;
-      border: 1px solid var(--card-border);
+      background: #e2e8f0;
+      border: 2px solid var(--card-border);
       border-radius: 12px;
       padding: 4px;
-      gap: 4px;
+      gap: 6px;
     }
     .segmented-btn {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       background: transparent;
       border: none;
       border-radius: 8px;
       color: var(--text-muted);
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.15s ease;
     }
     .segmented-btn.active {
-      background: var(--card-border);
-      color: var(--text);
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
 
     button.btn-add {
       background: var(--primary);
       color: white;
       border: none;
-      font-weight: 700;
-      font-size: 16px;
+      font-weight: 800;
+      font-size: 18px;
       cursor: pointer;
-      padding: 16px;
+      padding: 18px;
       border-radius: 12px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
     button.btn-add:active { background: var(--primary-hover); }
 
@@ -257,7 +259,7 @@
     .confirm-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(4px);
       display: none;
       align-items: center;
@@ -269,13 +271,13 @@
 
     .confirm-box {
       background: var(--card);
-      border: 1px solid var(--card-border);
+      border: 2px solid var(--card-border);
       border-radius: 20px;
       padding: 24px;
       width: 100%;
-      max-width: 360px;
+      max-width: 380px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       animation: fadeIn 0.15s ease-out;
     }
 
@@ -284,22 +286,22 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    .confirm-box p { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 20px 0; }
-    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-box p { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 20px 0; }
+    .confirm-actions { display: flex; gap: 12px; }
 
     .confirm-btn {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       border-radius: 10px;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
       border: none;
       cursor: pointer;
     }
-    .confirm-btn-cancel { background: #334155; color: var(--text); }
-    .confirm-btn-cancel:active { background: #475569; }
-    .confirm-btn-danger { background: var(--primary); color: white; }
-    .confirm-btn-danger:active { background: var(--primary-hover); }
+    .confirm-btn-cancel { background: #e2e8f0; color: var(--text); border: 1px solid var(--card-border); }
+    .confirm-btn-cancel:active { background: #cbd5e1; }
+    .confirm-btn-danger { background: #b91c1c; color: white; }
+    .confirm-btn-danger:active { background: #991b1b; }
 
     iframe { display: none; }
   </style>
@@ -329,8 +331,8 @@
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
       <div class="form-grid">
-        <input type="text" id="description" placeholder="Libellé (ex: Loyer, Forfait...)">
-        <input type="number" step="0.01" id="montant" placeholder="Montant (€)" inputmode="decimal">
+        <input type="text" id="description" placeholder="Libellé (ex: Loyer, Forfait...)" autocomplete="off">
+        <input type="number" step="0.01" id="montant" placeholder="Montant (€)" inputmode="decimal" autocomplete="off">
         
         <div class="segmented-control">
           <button type="button" class="segmented-btn active" id="btnPonctuel" onclick="setFrequence('ponctuelle')">Ponctuel</button>
@@ -338,10 +340,10 @@
         </div>
         
         <div id="dateContainer">
-          <input type="text" id="dateExacteText" placeholder="Date (ex: 25/09/2026)" inputmode="numeric" maxlength="10" oninput="formatDateInput(this)">
+          <input type="text" id="dateExacteText" placeholder="Date (ex: 25/09/2026)" inputmode="numeric" maxlength="10" oninput="formatDateInput(this)" autocomplete="off">
         </div>
         <div id="jourContainer" style="display: none;">
-          <input type="number" id="jourMois" min="1" max="31" placeholder="Jour du mois (ex: 1, 5, 15...)" inputmode="numeric">
+          <input type="number" id="jourMois" min="1" max="31" placeholder="Jour du mois (ex: 1, 5, 15...)" inputmode="numeric" autocomplete="off">
         </div>
 
         <button class="btn-add" id="btnSubmitModal" onclick="submitModal()">Ajouter la dépense</button>
@@ -352,7 +354,7 @@
   <!-- Surfenêtre de confirmation de suppression -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
-      <p>Supprimer cette dépense ?</p>
+      <p id="confirmText">Supprimer cette dépense ?</p>
       <div class="confirm-actions">
         <button class="confirm-btn confirm-btn-cancel" onclick="closeConfirmModal()">Annuler</button>
         <button class="confirm-btn confirm-btn-danger" id="confirmDeleteBtn">Supprimer</button>
@@ -537,13 +539,13 @@
       const doneItems = localItems.filter(i => i.fait);
 
       if (pendingItems.length === 0) {
-        pendingEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:14px; padding: 10px 0;">Aucune opération à venir.</p>';
+        pendingEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:16px; padding: 12px 0;">Aucune opération à venir.</p>';
       } else {
         pendingItems.forEach(item => pendingEl.appendChild(createItemElement(item)));
       }
 
       if (doneItems.length === 0) {
-        doneEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:14px; padding: 10px 0;">Aucune opération passée.</p>';
+        doneEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:16px; padding: 12px 0;">Aucune opération passée.</p>';
       } else {
         doneItems.forEach(item => doneEl.appendChild(createItemElement(item)));
       }
@@ -556,14 +558,14 @@
       let pressTimer = null;
       let isLongPress = false;
 
-      // Détection de l'appui long (2s)
+      // Appui long à 800ms
       const startPress = () => {
         isLongPress = false;
         pressTimer = setTimeout(() => {
           isLongPress = true;
-          if (navigator.vibrate) navigator.vibrate(50);
+          if (navigator.vibrate) navigator.vibrate(60);
           openModalForEdit(item);
-        }, 2000);
+        }, 800);
       };
 
       const cancelPress = () => {
@@ -674,6 +676,11 @@
     function deleteItem(id, event) {
       if (event) event.stopPropagation();
       itemToDeleteId = id;
+      
+      const item = localItems.find(i => i.id.toString() === id.toString());
+      const descName = item ? ` "${item.description}"` : '';
+      document.getElementById('confirmText').innerText = `Supprimer la dépense${descName} ?`;
+
       document.getElementById('confirmOverlay').classList.add('open');
     }
 
