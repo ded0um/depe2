@@ -102,6 +102,10 @@
     }
     li:active { background: #e2e8f0; }
 
+    /* Animation de déplacement des opérations (effet FLIP) */
+    li.moving { position: relative; z-index: 5; }
+    li.moving-main { z-index: 6; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22); }
+
     /* Style pour les opérations passées */
     li.done {
       background: #e2e8f0;
@@ -381,6 +385,7 @@
     let itemToDeleteId = null;
     let editingItemId = null;
     let selectedFrequence = 'ponctuelle';
+    let focusId = null;
 
     // Enregistrement du Service Worker PWA
     if ('serviceWorker' in navigator) {
@@ -532,7 +537,51 @@
       }
     }
 
+    // Position des opérations avant reconstruction des listes (pour l'animation)
+    function captureRects() {
+      const rects = {};
+      document.querySelectorAll('li[data-id]').forEach(li => {
+        rects[li.dataset.id] = li.getBoundingClientRect();
+      });
+      return rects;
+    }
+
+    // Fait glisser chaque opération de son ancienne position vers la nouvelle
+    function playFlip(firstRects) {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const moving = [];
+      document.querySelectorAll('li[data-id]').forEach(li => {
+        const first = firstRects[li.dataset.id];
+        if (!first) return;
+        const last = li.getBoundingClientRect();
+        const dx = first.left - last.left;
+        const dy = first.top - last.top;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+
+        li.style.transition = 'none';
+        li.style.transform = `translate(${dx}px, ${dy}px)`;
+        li.classList.add('moving');
+        if (focusId !== null && li.dataset.id === String(focusId)) li.classList.add('moving-main');
+        moving.push(li);
+      });
+
+      if (!moving.length) return;
+
+      void document.body.offsetWidth; // force le calcul avant de lancer la transition
+
+      moving.forEach(li => {
+        li.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease';
+        li.style.transform = '';
+        setTimeout(() => {
+          li.style.transition = '';
+          li.classList.remove('moving', 'moving-main');
+        }, 500);
+      });
+    }
+
     function updateUI() {
+      const firstRects = captureRects();
       let totalAVenir = 0;
 
       localItems.forEach(i => {
@@ -580,10 +629,14 @@
       } else {
         doneItems.forEach(item => doneEl.appendChild(createItemElement(item)));
       }
+
+      playFlip(firstRects);
+      focusId = null;
     }
 
     function createItemElement(item) {
       const li = document.createElement('li');
+      li.dataset.id = item.id;
       if (item.fait) li.classList.add('done');
 
       let pressTimer = null;
@@ -699,6 +752,7 @@
       const item = localItems.find(i => i.id.toString() === id.toString());
       if (item) {
         item.fait = !item.fait;
+        focusId = id;
         updateUI();
         submitForm('toggle', { id: id });
       }
