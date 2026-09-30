@@ -460,36 +460,50 @@
       }
     }
 
-    function getNextDueDateTimestamp(item) {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
+    /*
+     * Date de référence d'une opération (sans "saut" au mois suivant) :
+     * - mensuelle : le jour du mois en cours (borné au dernier jour du mois)
+     * - ponctuelle : la date saisie
+     * Sans date exploitable : Infinity (placé en fin de liste).
+     */
+    function getItemTimestamp(item) {
       if (item.frequence === 'mensuelle') {
         const targetDay = parseInt(item.dateVal, 10);
         if (isNaN(targetDay)) return Infinity;
 
-        let targetDate = new Date(today.getFullYear(), today.getMonth(), targetDay);
-        if (targetDate < today) {
-          targetDate = new Date(today.getFullYear(), today.getMonth() + 1, targetDay);
-        }
-        return targetDate.getTime();
+        const now = new Date();
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const day = Math.min(Math.max(targetDay, 1), lastDay);
+        return new Date(now.getFullYear(), now.getMonth(), day).getTime();
       } else if (item.dateVal) {
         let parts = [];
         if (item.dateVal.includes('/')) {
           parts = item.dateVal.split('/');
           if (parts.length === 3) {
             const targetDate = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-            return targetDate.getTime();
+            const t = targetDate.getTime();
+            return isNaN(t) ? Infinity : t;
           }
         } else if (item.dateVal.includes('-')) {
           parts = item.dateVal.split('-');
           if (parts.length === 3) {
             const targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-            return targetDate.getTime();
+            const t = targetDate.getTime();
+            return isNaN(t) ? Infinity : t;
           }
         }
       }
       return Infinity;
+    }
+
+    // Tri croissant : la date la plus ancienne en premier, sans date à la fin
+    function compareByDate(a, b) {
+      const ta = getItemTimestamp(a);
+      const tb = getItemTimestamp(b);
+      if (ta === tb) return 0;
+      if (ta === Infinity) return 1;
+      if (tb === Infinity) return -1;
+      return ta - tb;
     }
 
     function formatDateDisplay(item) {
@@ -527,16 +541,16 @@
 
       document.getElementById('totalAVenir').innerText = totalAVenir.toFixed(2) + " €";
 
-      localItems.sort((a, b) => getNextDueDateTimestamp(a) - getNextDueDateTimestamp(b));
-
       const pendingEl = document.getElementById('listPending');
       const doneEl = document.getElementById('listDone');
       
       pendingEl.innerHTML = '';
       doneEl.innerHTML = '';
 
-      const pendingItems = localItems.filter(i => !i.fait);
-      const doneItems = localItems.filter(i => i.fait);
+      // À venir : dates dépassées (à contrôler) en haut, puis les plus proches
+      const pendingItems = localItems.filter(i => !i.fait).sort(compareByDate);
+      // Passées : de la date la plus ancienne à la plus proche d'aujourd'hui
+      const doneItems = localItems.filter(i => i.fait).sort(compareByDate);
 
       if (pendingItems.length === 0) {
         pendingEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:16px; padding: 12px 0;">Aucune opération à venir.</p>';
