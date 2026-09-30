@@ -547,10 +547,27 @@
       pendingEl.innerHTML = '';
       doneEl.innerHTML = '';
 
-      // À venir : dates dépassées (à contrôler) en haut, puis les plus proches
-      const pendingItems = localItems.filter(i => !i.fait).sort(compareByDate);
       // Passées : de la date la plus ancienne à la plus proche d'aujourd'hui
       const doneItems = localItems.filter(i => i.fait).sort(compareByDate);
+
+      // À venir : tri qui démarre à la date du dernier élément passé (le plus récent),
+      // puis ordre croissant ; les dates antérieures repassent à la fin de la liste
+      let refTs = -Infinity;
+      doneItems.forEach(i => {
+        const t = getItemTimestamp(i);
+        if (t !== Infinity && t > refTs) refTs = t;
+      });
+      const pendingItems = localItems.filter(i => !i.fait).sort((a, b) => {
+        const ta = getItemTimestamp(a);
+        const tb = getItemTimestamp(b);
+        if (ta === tb) return 0;
+        if (ta === Infinity) return 1;
+        if (tb === Infinity) return -1;
+        const aAfter = ta >= refTs;
+        const bAfter = tb >= refTs;
+        if (aAfter !== bAfter) return aAfter ? -1 : 1;
+        return ta - tb;
+      });
 
       if (pendingItems.length === 0) {
         pendingEl.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:16px; padding: 12px 0;">Aucune opération à venir.</p>';
